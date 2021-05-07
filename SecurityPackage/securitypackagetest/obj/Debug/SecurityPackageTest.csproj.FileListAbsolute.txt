@@ -33,3 +33,10 @@ F:\lectcures and labs fourth year\2nd term\SecurityPackage\SecurityPackageTest\b
 F:\lectcures and labs fourth year\2nd term\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csprojResolveAssemblyReference.cache
 F:\lectcures and labs fourth year\2nd term\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.dll
 F:\lectcures and labs fourth year\2nd term\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.pdb
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityPackageTest.dll
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityPackageTest.pdb
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityLibrary.dll
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityLibrary.pdb
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csprojResolveAssemblyReference.cache
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.dll
+D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.pdb
