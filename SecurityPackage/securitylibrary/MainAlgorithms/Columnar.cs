@@ -53,65 +53,64 @@ namespace SecurityLibrary
         {
             cipherText = cipherText.ToLower();
             int max = 0;
-
+            List<int> key2 = new List<int>();
             for (int i = 0; i < key.Count; i++)
             {
-                key[i]--;
-                if (max < key[i])
-                    max = key[i];
+                key2.Add(key[i] - 1);
+                if (max < key2[i])
+                    max = key2[i];
+                Console.WriteLine(max);
             }
-            int row = cipherText.Length / (max + 1);
-            int x = 0;
-            /**
-            if (row * (max + 1) < cipherText.Length)
-            {
-                row++;
-                x = row * (max + 1) - cipherText.Length;
+            max++;
 
-            }
+            /*
+            double row = Math.Ceiling(cipherText.Length / (max ));
+            Console.WriteLine(cipherText.Length / (max ));
             **/
-            //Console.WriteLine(row + " , " + max + "," + cipherText.Length + "," + x);
-            string[,] mat = new string[20, max + 1];
+            int row = cipherText.Length / max;
+            Console.WriteLine(row + " , " + max + "," + cipherText.Length);
+            string[,] mat = new string[row, max];
             string outp = "";
             int indx = 0;
-            for (int i = 0; i <= max; i++)
+            for (int i = 0; i < max; i++)
             {
-                int y = key.IndexOf(i);
-                //Console.WriteLine(y);
+                int y = key2.IndexOf(i);
                 for (int j = 0; j < row; j++)
                 {
-                    if (indx == cipherText.Length)
-                    { mat[j, y] = "x"; }
 
-                    /** if (j == row - 1 && i >= (max - x + 1))
-                     {
-                         mat[j, y] = " ";
-                     }**/
-                    else
+                    if (indx.Equals(cipherText.Length))
                     {
-                        mat[j, y] = cipherText[indx].ToString(); indx++;
-                        // Console.WriteLine(indx + " index");
+                        mat[j, y] = "x";
+                        Console.WriteLine(indx);
                     }
 
-                    Console.WriteLine(mat[j, y].ToString() + ",");
+                    else
+                    {
+                        mat[j, y] = cipherText[indx].ToString();
+                        indx++;
+                        Console.WriteLine(indx);
+                    }
+                    Console.WriteLine(indx.Equals(cipherText.Length) + "   bool");
+                    //Console.WriteLine(mat[j, y].ToString() + ",");
 
                 }
-                Console.WriteLine(outp);
+                //Console.WriteLine(outp);
             }
             for (int i = 0; i < row; i++)
             {
-                for (int j = 0; j < max + 1; j++)
+                for (int j = 0; j < max; j++)
                 {
+                    //Console.WriteLine(j);
                     outp += mat[i, j].ToString();
-                    Console.Write(mat[i, j].ToString() + ",");
+                    // Console.Write(mat[i, j].ToString() + ",");
                 }
-                Console.WriteLine(" ");
+                //Console.WriteLine(" ");
             }
 
             Console.WriteLine(outp);
             return outp;
-            throw new NotImplementedException();
         }
+    
 
         public string Encrypt(string plainText, List<int> key)
         {

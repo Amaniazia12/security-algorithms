@@ -46,7 +46,6 @@ namespace SecurityPackageTest
             Columnar algorithm = new Columnar();
             string plain1 = algorithm.Decrypt(mainCipher1, mainkey);
             string plain2 = algorithm.Decrypt(mainCipher2, mainkey);
-
             Assert.IsTrue(plain1.Equals(mainPlain1, StringComparison.InvariantCultureIgnoreCase)
              || plain2.Equals(mainPlain2, StringComparison.InvariantCultureIgnoreCase));
         }
