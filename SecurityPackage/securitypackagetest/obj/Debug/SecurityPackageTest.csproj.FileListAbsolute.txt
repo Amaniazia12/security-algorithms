@@ -40,3 +40,12 @@ D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\bin
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csprojResolveAssemblyReference.cache
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.dll
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.pdb
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityPackageTest.dll
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityPackageTest.pdb
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityLibrary.dll
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\bin\Debug\SecurityLibrary.pdb
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csprojAssemblyReference.cache
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csproj.CoreCompileInputs.cache
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.csproj.CopyComplete
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.dll
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityPackageTest\obj\Debug\SecurityPackageTest.pdb

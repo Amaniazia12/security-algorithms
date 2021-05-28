@@ -53,7 +53,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AESTest.cs" />
     <Compile Include="ColumnarTest.cs" />
+    <Compile Include="DES3DESTest.cs" />
+    <Compile Include="ExtendedEuclidTest.cs" />
     <Compile Include="HillCipherTest.cs" />
     <Compile Include="PlayfairTest.cs" />
     <Compile Include="MonoalphabeticTest.cs" />
@@ -67,6 +70,9 @@
       <Project>{64afbae4-208f-4f5d-b9f4-cca2e71f36e4}</Project>
       <Name>SecurityLibrary</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="desktop.ini" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

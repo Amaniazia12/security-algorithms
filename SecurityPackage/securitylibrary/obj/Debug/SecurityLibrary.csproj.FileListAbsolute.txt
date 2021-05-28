@@ -22,3 +22,9 @@ D:\4rd year\security\security-algorithms\SecurityPackage\SecurityLibrary\obj\Deb
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityLibrary\obj\Debug\SecurityLibrary.pdb
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityLibrary\bin\Debug\SecurityLibrary.dll
 D:\4rd year\security\security-algorithms\SecurityPackage\SecurityLibrary\bin\Debug\SecurityLibrary.pdb
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\bin\Debug\SecurityLibrary.dll
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\bin\Debug\SecurityLibrary.pdb
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\obj\Debug\SecurityLibrary.csprojAssemblyReference.cache
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\obj\Debug\SecurityLibrary.csproj.CoreCompileInputs.cache
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\obj\Debug\SecurityLibrary.dll
+D:\The4\security\git\security-algorithms\SecurityPackage\SecurityLibrary\obj\Debug\SecurityLibrary.pdb
