@@ -11,28 +11,19 @@ namespace SecurityLibrary.AES
     /// </summary>
     public class AES : CryptographicTechnique
     {
-        struct arrKey
-        {
-            public String[,] roundkey;
-        };
-        arrKey[] _keySchedual = new arrKey[10];
+        public string[,,] allkeys = new string[12, 4, 4];
 
-        //public String[] Rcon = {
-        //    "01", "00", "00", "00",
-        //    "02", "00", "00", "00",
-        //    "04", "00", "00", "00",
-        //    "08", "00", "00", "00",
-        //    "10", "00", "00", "00",
-        //    "20", "00", "00", "00",
-        //    "40", "00", "00", "00",
-        //    "80", "00", "00", "00",
-        //    "1b", "00", "00", "00",
-        //    "36", "00", "00", "00"
-        //};
+        public string[,] rconMatrix = {
+                { "00000001", "00000010", "00000100", "00001000", "00010000", "00100000", "01000000", "10000000", "00011011", "00110110"},
+                { "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000"},
+                { "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000"},
+                { "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000", "00000000"},
+
+            };
+        
         public String Rcon = "0x01000000020000000400000008000000100000002000000040000000800000001b00000036000000";
 
         public string mixCols = "0x02030101010203010101020303010102";
-        //case string starts without 0x
         private static string[] SBOX = {
             "63", "7C", "77", "7B", "F2", "6B", "6F", "C5", "30", "01", "67", "2B", "FE", "D7", "AB", "76",
             "CA", "82", "C9", "7D", "FA", "59", "47", "F0", "AD", "D4", "A2", "AF", "9C", "A4", "72", "C0",
@@ -70,105 +61,141 @@ namespace SecurityLibrary.AES
             0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
             0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
         };
-        //Using this function in case the sbox is hexdecmial;
-
+   
         public override string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            
+            
+            mixCols = mixCols.Remove(0, 2);
+            string[,] mixcolsMatrix = StringTomatrix2(mixCols, 4, 4);
+            cipherText = cipherText.Remove(0, 2);
+            key = key.Remove(0, 2);
+            string[,]  cipherTextMatrix = StringTomatrix(cipherText , 4 , 4);
+            string[,] KeyMatrix = StringTomatrix(key, 4, 4);
+
+            cipherTextMatrix = HexToBin(cipherTextMatrix);
+            KeyMatrix = HexToBin(KeyMatrix);
+
+            cipherTextMatrix = addRound(cipherTextMatrix, KeyMatrix);
+            
+            cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+            KeyMatrix = convertBinToHexMatrex(KeyMatrix);
+
+            KeyMatrix = RoundKey(KeyMatrix, rconMatrix, 9);
+
+            cipherTextMatrix = Shift(cipherTextMatrix);
+            cipherTextMatrix = subByte(cipherTextMatrix);
+
+            for (int i = 9; i > 0; i--)
+            {
+                cipherTextMatrix = HexToBin(cipherTextMatrix);
+
+                for (int k = 0; k < 4; k++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        KeyMatrix[i, j] = allkeys[i, k, j];
+                    }
+                }
+                KeyMatrix = HexToBin(KeyMatrix);
+                cipherTextMatrix = addRound(cipherTextMatrix, KeyMatrix);
+                cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+                KeyMatrix = HexToBin(KeyMatrix);
+                KeyMatrix = RoundKey(KeyMatrix, rconMatrix, i);
+                cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+                cipherTextMatrix = MixColumns(cipherTextMatrix, mixcolsMatrix);
+                cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+                cipherTextMatrix = Shift(cipherTextMatrix);
+                cipherTextMatrix = subByte(cipherTextMatrix); 
+            }
+            KeyMatrix = HexToBin(KeyMatrix);
+            cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+            for (int k = 0; k < 4; k++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    KeyMatrix[0, j] = allkeys[0, k, j];
+                }
+            }
+            cipherTextMatrix = addRound(cipherTextMatrix,KeyMatrix );
+            KeyMatrix = convertBinToHexMatrex(KeyMatrix);
+            cipherTextMatrix = convertBinToHexMatrex(cipherTextMatrix);
+            
+            string plainText = "0x";
+            for (int j = 0; j < 4; j++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    plainText += cipherTextMatrix[i, j];
+                }
+            }
+
+            return plainText; 
         }
 
         public override string Encrypt(string plainText, string key)
         {
+            
+            plainText = plainText.Remove(0, 2);
+            key = key.Remove(0, 2);
+            mixCols = mixCols.Remove(0, 2);
+            Rcon = Rcon.Remove(0, 2);
 
-            String[,] plainTextMatrix = new string[4, 4];
-            String[,] cipherkey = new string[4, 4];
+            string[,] plaintextMatrix = StringTomatrix(plainText, 4, 4);
+            string[,] keyMatrix = StringTomatrix(key, 4, 4);
+            for (int i = 0; i < 4; i ++)
+            {
+                for (int j = 0; j < 4; j ++)
+                {
+                    allkeys[0, i, j] = keyMatrix[i, j];
+                }
+            }
+            string[,] mixcolsMatrix = StringTomatrix2(mixCols, 4, 4);
 
-            //convert string to list 
+            mixcolsMatrix = HexToBin(mixcolsMatrix);
+            plaintextMatrix = HexToBin(plaintextMatrix);
+            keyMatrix = HexToBin(keyMatrix);
+            plaintextMatrix = addRound(plaintextMatrix, keyMatrix);
+            plaintextMatrix = convertBinToHexMatrex(plaintextMatrix);
+            keyMatrix = convertBinToHexMatrex(keyMatrix);
 
-            List<string> PT = ConvertStringToList(plainText);
-            List<string> KT = ConvertStringToList(key);
-            List<string> rconList = ConvertStringToList(Rcon);
-            List<string> mixColList = ConvertStringToList(mixCols);
 
-
-            //convert list to matrix 
-            Console.WriteLine("plainText");
-            plainTextMatrix = StringTomatrix(PT, 4, 4);
-            Console.WriteLine("keycipher");
-            cipherkey = StringTomatrix(KT, 4, 4);
-            Console.WriteLine("Rcon");
-            string[,] rconMatrix = StringTomatrix(rconList, 10, 4);
-            Console.WriteLine("mixcol");
-            string[,] mixColsMatrix = StringTomatrix(mixColList, 4, 4);
-
-            //from hex to Bin
-            //Console.WriteLine("BinaryplainText");
-            plainTextMatrix = convertHexToBinMatrex(plainTextMatrix);
-            Console.WriteLine("mixcol");
-            mixColsMatrix = convertHexToBinMatrex(mixColsMatrix);
-            // Done 
-
-            //schedual
-            keySchedual(cipherkey, rconMatrix, 10);
-            //plainTextMatrix = SubByte(plainTextMatrix);
-
-            plainTextMatrix = addRoundKey(plainTextMatrix, cipherkey);
-            int sizeOfmatrix = getColumn(plainTextMatrix, 0).Length;
-
-            // 9 main Round 
             for (int i = 0; i < 9; i++)
             {
-                plainTextMatrix = convertBinToHexMatrex(plainTextMatrix);
-                plainTextMatrix = SubByte(plainTextMatrix);
-                plainTextMatrix = ShiftRows(plainTextMatrix);
-                plainTextMatrix = convertHexToBinMatrex(plainTextMatrix);
-                plainTextMatrix = MixColumns(plainTextMatrix, mixColsMatrix);
-                plainTextMatrix = addRoundKey(plainTextMatrix, _keySchedual[i].roundkey);
+                plaintextMatrix = subByte(plaintextMatrix);
+                plaintextMatrix = Shift(plaintextMatrix);
 
+                plaintextMatrix = HexToBin(plaintextMatrix);
+                plaintextMatrix = MixColumns(plaintextMatrix, mixcolsMatrix);
+                plaintextMatrix = convertBinToHexMatrex(plaintextMatrix);
+
+                keyMatrix = RoundKey(keyMatrix, rconMatrix, i);
+                keyMatrix = HexToBin(keyMatrix);
+                plaintextMatrix = HexToBin(plaintextMatrix);
+                plaintextMatrix = addRound(plaintextMatrix, keyMatrix);
+                keyMatrix = convertBinToHexMatrex(keyMatrix);
+                plaintextMatrix = convertBinToHexMatrex(plaintextMatrix);
             }
-            //final Round
-            plainTextMatrix = convertBinToHexMatrex(plainTextMatrix);
-            plainTextMatrix = SubByte(plainTextMatrix);
-            plainTextMatrix = ShiftRows(plainTextMatrix);
-            plainTextMatrix = convertHexToBinMatrex(plainTextMatrix);
-            plainTextMatrix = addRoundKey(plainTextMatrix, _keySchedual[9].roundkey);
-            plainTextMatrix = convertBinToHexMatrex(plainTextMatrix);
-            String cipher = convertMatrixToStrinf(plainTextMatrix, 4);
-            Console.WriteLine(cipher);
+
+            plaintextMatrix = subByte(plaintextMatrix);
+            plaintextMatrix = Shift(plaintextMatrix);
+
+            keyMatrix = RoundKey(keyMatrix, rconMatrix, 9);
+
+            keyMatrix = HexToBin(keyMatrix);
+            plaintextMatrix = HexToBin(plaintextMatrix);
+            plaintextMatrix = addRound(plaintextMatrix, keyMatrix);
+            plaintextMatrix = convertBinToHexMatrex(plaintextMatrix);
+
+            string cipher = "0x";
+            for (int j = 0; j < 4; j++)
+                for (int i = 0; i < 4; i++)
+                    cipher += plaintextMatrix[i, j];
+
             return cipher;
 
         }
-        public string[] HexToDec(string[] x)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                x[i] = Convert.ToString(Convert.ToInt64(x[i], 16), 10);
 
-            }
-            return x;
-        }
-        public string[] Dect0Hex(string[] x)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                x[i] = Convert.ToString(Convert.ToInt64(x[i], 10), 16);
-
-            }
-            return x;
-        }
-        public string[] HexToBin(string[] x)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                x[i] = Convert.ToString(Convert.ToInt64(x[i], 16), 2);
-                if (x[i].Length < 8)
-                {
-                    x[i] = new String('0', 8 - x[i].Length) + x[i];
-                }
-            }
-            return x;
-        }
-        //location of the box at SBox
         public int BoxLocation(string str)
         {
             int Row = Convert.ToInt32(str[0].ToString(), 16);
@@ -176,349 +203,123 @@ namespace SecurityLibrary.AES
             int Position = Row * 16 + strLength;
             return Position;
         }
-
-        public string[,] addRoundKey(string[,] plainText, string[,] roundKey)
+        public string [,] subByte (string [, ] plainText)
         {
-            int size = getColumn(plainText, 0).Length;
 
-            String[] _columnOfPlainText = new string[4];
-            String[] _columnOfRoundKey = new string[4];
-            String[] _column = new string[4];
-
-            for (int k = 0; k < size; k++)
-            {
-
-                for (int i = 0; i < 4; i++)
-                {
-                    _columnOfPlainText = getColumn(plainText, i);
-                    _columnOfRoundKey = getColumn(roundKey, i);
-                    for (int j = 0; j < 8; j++)
-                        _column[i] += (_columnOfPlainText[i])[j] == (_columnOfRoundKey[i])[j] ? '0' : '1';
-
-                }
-                plainText = setColumn(plainText, _column, k);
-                _column = new string[4];
+            for (int i = 0; i < 4; i++)
+            { 
+                for (int j = 0; j < 4; j++)
+                    plainText[i,j]= SBOX[BoxLocation(plainText[i, j])];
             }
-            Console.WriteLine(" addRound ");
-            printMatrix(plainText);
+
             return plainText;
         }
-
-        public List<string> ConvertStringToList(string x)
+        string[,] ShiftRow(string[,] plainText, int r)
         {
-            List<string> strList = new List<string>();
-            string str = x.Split('x')[1];
-            //string str = x.Split('x')[1];
-            for (int i = 0; i < str.Length; i += 2)
-            {
-                strList.Add(str[i].ToString() + str[i + 1].ToString());
-            }
-            return strList;
-        }
-        public String[,] SubByte(String[,] plainText)
-        {
-            int size = getColumn(plainText, 0).Length;
-            String[] _column = new string[4];
-
-            for (int i = 0; i < size; i++)
-            {
-                _column = getColumn(plainText, i);
-
-                for (int j = 0; j < size; j++)
-                    _column[i] = SBOX[BoxLocation(plainText[i, j])];
-
-                plainText = setColumn(plainText, _column, i);
-            }
-
-            Console.WriteLine("subByte");
-            printMatrix(plainText);
+            string first = plainText[r, 0];
+            for (int i = 0; i < 3; i++)
+                plainText[r, i] = plainText[r, i + 1];
+            plainText[r, 3] = first;
             return plainText;
         }
-        public string[,] ShiftRows(string[,] plainText)
+        public string [,] Shift (string [,] plainText)
         {
-            int size = getColumn(plainText, 0).Length;
-            plainText = setRow(plainText, getRow(plainText, 0), 0);
-            for (int i = 1; i < size; i++)
+            for (int i = 0; i < 4; i++)
             {
-                String[] _tempRow = new String[4];
-                String[] row = getRow(plainText, i);
                 for (int j = 0; j < i; j++)
-                    _tempRow[j] = row[j];
-
-                for (int j = 0; j < size - i; j++)
-                    row[j] = row[j + 1];
-
-                for (int j = size - i; j < size; j++)
-                    row[j] = _tempRow[j];
-                plainText = setRow(plainText, getRow(plainText, i), i);
+                {
+                    ShiftRow(plainText, i);
+                }
             }
-            Console.WriteLine("ShiftRows");
-            printMatrix(plainText);
             return plainText;
         }
-        public string[,] MixColumns(string[,] plainText, String[,] mixCols)
+        public string [, ] MixColumns(string [,] plainText , string [, ] mixCols)
         {
-            int size = getColumn(plainText, 0).Length;
-            string[] rowOfMixCols = new string[4];
-            string[] columnOfPlainText = new string[4];
-            String[] _column = new string[4];
-
-            int res = 0;
-
-            for (int k = 0; k < 4; k++)
+            string[,] Matrix = new string[4, 4];
+            for (int rIdx = 0; rIdx < 4; rIdx++)
             {
-                for (int i = 0; i < 4; i++)
+                for (int cIdx = 0; cIdx < 4; cIdx++)
                 {
-                    rowOfMixCols = getRow(mixCols, i);
-                    columnOfPlainText = getColumn(plainText, i);
-
-                    for (int j = 0; j < size; j++)
-                        res += Convert.ToInt32(rowOfMixCols[j], 2) * Convert.ToInt32(columnOfPlainText[j], 2);
-
-                    _column[i] = Convert.ToString(res, 2);
+                    string res = "00000000";
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (mixCols[rIdx, i] == "00000001")
+                        {
+                            res = Xor(res, plainText[i, cIdx]);
+                        }
+                        else if (mixCols[rIdx, i] == "00000010")
+                        {
+                            string ans = mult(plainText[i, cIdx]);
+                            res = Xor(res, ans);
+                        }
+                        else if (mixCols[rIdx, i] == "00000011")
+                        {
+                            string ans = mult(plainText[i, cIdx]);
+                            ans = Xor(ans, plainText[i, cIdx]);
+                            res = Xor(res, ans);
+                        }
+                    }
+                    Matrix[rIdx, cIdx] = res;
                 }
-                plainText = setColumn(plainText, _column, k);
             }
-
-            Console.WriteLine("mixColumn");
-            printMatrix(plainText);
+            return Matrix;
+        }
+        public string [, ] addRound(string [, ] plainText , string [, ] cipherKey )
+        {
+            for (int i= 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    plainText[i, j] = Xor(cipherKey[i, j], plainText[i, j]);
+                }
+            }
             return plainText;
-
         }
-        public String[,] roundKey(string[,] cipherkey, string[] rcon)
+        public string[,] addRoundDecrypt(string[,] plainText, string[,] cipherKey)
         {
-            int size = getColumn(cipherkey, 0).Length;
-            string[,] roundKey = new String[4, 4];
-
-            //lastColumn of round key  and it's process
-            string[] lastColumn = new String[4];
-            lastColumn = getColumn(cipherkey, size - 1);
-
-            //subByte
-            for (int i = 0; i < size; i++)
-                lastColumn[i] = SBOX[BoxLocation(lastColumn[i])];
-
-            //revers first element and last element 
-            String temp = lastColumn[0];
-            lastColumn[0] = lastColumn[size - 1];
-            lastColumn[size - 1] = temp;
-
-            //first column of round key 
-            string[] firstColumn = new String[4];
-            firstColumn = getColumn(cipherkey, 0);
-            //rcon 
-            string[] rconColumn = new String[4];
-
-            // result OF Xor first col and last col  to create first column 
-
-            lastColumn = HexToBin(lastColumn);
-            firstColumn = HexToBin(firstColumn);
-            rcon = HexToBin(rcon);
-
-            string[] res = new String[4];
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                    res[i] += (firstColumn[i])[j] == (lastColumn[i])[j] ? "0" : "1";
-
-                for (int j = 0; j < 8; j++)
-                    roundKey[i, 0] += (res[i])[j] == (rcon[i])[j] ? "0" : "1";
-
-            }
-
-            //all culumns 
-            String[] sec = getColumn(cipherkey, 1);
-            String[] th = getColumn(cipherkey, 2);
-            String[] frth = getColumn(cipherkey, 2);
-            sec = HexToBin(sec);
-            th = HexToBin(th);
-            frth = HexToBin(frth);
-
-            //sec column in round key
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                    roundKey[i, 1] += (sec[i])[j] == (roundKey[i, 0])[j] ? "0" : "1";
-            }
-            //th column in round key
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                    roundKey[i, 2] += (th[i])[j] == (roundKey[i, 1])[j] ? "0" : "1";
-            }
-            //frth column in round key
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                    roundKey[i, 3] += (frth[i])[j] == (roundKey[i, 2])[j] ? "0" : "1";
-            }
-
-            Console.WriteLine("roundKey");
-            printMatrix(cipherkey);
-            return roundKey;
-            //throw new NotImplementedException();
-        }
-
-        //araay of KeySchedual
-        public void keySchedual(String[,] cipherkey, String[,] rcon, int numOfRoundKey)
-        {
-
-            String[] rconElement = getColumn(rcon, 0);
-
-
-            _keySchedual[0].roundkey = convertHexToBinMatrex(cipherkey);
-
-            for (int i = 1; i < 10; i++)
-            {
-                _keySchedual[i].roundkey = roundKey(_keySchedual[i - 1].roundkey, getRow(rcon, i - 1));
-            }
-            //return _keySchedual;
-        }
-        //Done
-        public String[] getColumn(string[,] matrix, int position)
-        {
-
-            String[] _column = new string[matrix.Length / 4];
-
-            for (int i = 0; i < 4; i++)
-            {
-                _column[i] = matrix[i, position];
-            }
-            return _column;
-        }
-        public String[] getRow(string[,] matrix, int position)
-        {
-
-            int lenght = matrix.Length;
-            if (lenght > 16)
-                lenght = 16;
-            String[] _row = new string[lenght / 4];
-
-            for (int i = 0; i < lenght / 4; i++)
-            {
-                _row[i] = matrix[position, i];
-            }
-            return _row;
-        }
-        //Done
-        public String[,] setColumn(string[,] matrix, String[] column, int position)
-        {
-            int size = getColumn(matrix, 0).Length;
-            for (int i = 0; i < size; i++)
-            {
-                matrix[i, position] = column[i];
-            }
-            return matrix;
-        }
-        public String[,] setRow(string[,] matrix, string[] row, int position)
-        {
-            int size = getColumn(matrix, 0).Length;
-            for (int i = 0; i < size; i++)
-            {
-                matrix[position, i] = row[i];
-            }
-            return matrix;
-        }
-        //Done
-        public void printMatrix(string[,] matrix)
-        {
-            string[] row = getRow(matrix, 0);
-            string[] col = getColumn(matrix, 0);
-
-            for (int i = 0; i < col.Length; i++)
-            {
-                for (int j = 0; j < row.Length; j++)
-                {
-                    Console.Write(matrix[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine(" print matrix");
-        }
-
-        //Done
-        public String[,] StringTomatrix(List<String> str, int row, int col)
-        {
-            String[,] matrix = new string[row, col];
-            int k = 0;
-            for (int i = 0; i < row; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-
-                    matrix[i, j] = str.ElementAt(k);
-                    k++;
-                }
-
-            }
-            printMatrix(matrix);
-            return matrix;
-        }
-
-        public List<string> convertArrayToList(String[] arr, int sizOfmatrix)
-        {
-            List<string> list = new List<string>();
-            for (int i = 0; i < sizOfmatrix; i++)
-                list.Add(arr[i]);
-
-            return list;
-        }
-        public string convertMatrixToStrinf(String[,] matrix, int size)
-        {
-            String str = "";
-            for (int i = 0; i < size; i++)
-            {
-                for (int j = 0; j < size; j++)
-                {
-                    str += matrix[i, j];
-                }
-            }
-            return str;
-        }
-        public string[,] convertHexToBinMatrex(String[,] matrix)
-        {
-            String[] _colmn = new string[4];
-
-            for (int i = 0; i < 4; i++)
-            {
-                _colmn = getColumn(matrix, i);
-                _colmn = HexToBin(_colmn);
-                matrix = setColumn(matrix, _colmn, i);
-            }
-            return matrix;
-        }
-
-        public string[,] convertBinToHexMatrex(String[,] matrix)
-        {
-
             for (int i = 0; i < 4; i++)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    matrix[i, j] = BinaryStringToHexString(matrix[i, j]);
+                    plainText[i, j] = Xor(cipherKey[i, j], plainText[i, j]);
                 }
-
             }
-            return matrix;
+            return plainText;
         }
-
-        public string binToHex(string a)
+        public string[,] RoundKey(string[,] roundkey, string[,] rcon, int index)
         {
-            String res = " ";
-            for (int i = 0; i <= 4; i += 4)
+            string[] col = new string[4];
+            for (int i = 0; i < 4; i++)
             {
-                string aR = a[i].ToString() + a[i + 1].ToString() + a[i + 2].ToString() + a[i + 3].ToString();
-                aR = Convert.ToInt32(aR, 2).ToString();
-                aR = aR.Length == 1 ? aR :
-                    aR == "10" ? "A" :
-                    aR == "11" ? "B" :
-                    aR == "12" ? "C" :
-                    aR == "13" ? "D" :
-                    aR == "14" ? "E" : "F";
-                res += aR;
+                col[i] = roundkey[i, 3];
+
+            }
+            for (int i = 0; i < 4; i++)
+                col[i] = SBOX[BoxLocation(col[i])];
+
+            string first = col[0];
+            for (int i = 0; i < 3; i++)
+                col[i] = col[i + 1];
+            col[3] = first;
+
+            for (int i = 0; i < 4; i++)
+            {
+                roundkey[i, 0] = Xor(hexto(roundkey[i, 0]), hexto(col[i]));
+                roundkey[i, 0] = Xor(roundkey[i, 0], rcon[i, index]);
             }
 
-            return res;
+            for (int j = 1; j < 4; j++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    string str = roundkey[i, j - 1];
+                    roundkey[i, j] = Xor(hexto(roundkey[i, j]), str);
+                }
+            }
+            roundkey = convertBinToHexMatrex(roundkey);
+
+            
+            return roundkey;
         }
         public static string BinaryStringToHexString(string binary)
         {
@@ -544,6 +345,116 @@ namespace SecurityLibrary.AES
 
             return result.ToString();
         }
+        public string mult(string str)
+        {
+            char c = str[0];
+            str = str.Remove(0, 1);
+            str += '0';
+            if (c == '1')
+            {
+                str = Xor(str, "00011011");
+            }
+            return str;
+        }
+        public string Xor(string str1, string str2)
+        {
+            string res = "";
+            for (int i = 0; i < 8; i++)
+                if (str1[i] == str2[i])
+                    res += '0';
+                else res += '1';
+            return res;
+        }
+       
+        public String[,] StringTomatrix(String str, int row, int col)
+        {
+            String[,] matrix = new string[row, col];
+            int idx = 0;
+            for (int j = 0; j < col; j++)
+            {
+                for (int i = 0; i < row; i++)
+                {
+
+                    matrix[i, j] = str[idx].ToString() + str[idx + 1].ToString();
+                    idx += 2;
+                    
+                }
+
+            }
+            //printMatrix(matrix);
+            return matrix;
+        }
+        public String[,] StringTomatrix2(String str, int row, int col)
+        {
+            String[,] matrix = new string[row, col];
+            int idx = 0;
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+
+                    matrix[i, j] = str[idx].ToString() + str[idx + 1].ToString();
+                    idx += 2;
+
+                }
+
+            }
+            //printMatrix(matrix);
+            return matrix;
+        }
+        public String[,] StringTomatrix3(String str, int row, int col)
+        {
+            String[,] matrix = new string[row, col];
+            int idx = 0;
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+
+                    matrix[i, j] = str[idx].ToString() + str[idx + 1].ToString();
+                    idx += 2;
+
+                }
+
+            }
+            //printMatrix(matrix);
+            return matrix;
+        }
+        public string hexto(string str) {
+            str = Convert.ToString(Convert.ToInt64(str, 16), 2);
+            if (str.Length < 8)
+            {
+                str = new string('0', 8 - str.Length) + str;
+            }
+            return str;
+        } 
+        public string[,] HexToBin(string[,] matrix)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    matrix[i, j] = hexto(matrix[i, j]);
+                }
+            }
+            return matrix;
+        }
+        public string[,] convertBinToHexMatrex(String[,] matrix)
+        {
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    matrix[i, j] = BinaryStringToHexString(matrix[i, j]);
+                }
+
+            }
+            return matrix;
+        }
+
+        
+
     }
 
 }
